@@ -1,0 +1,63 @@
+# .gitignore for cgm-bridge
+
+# Binaries, packages, installers
+*.ipa
+*.apk
+*.aab
+*.deb
+*.dylib
+*.so
+*.a
+*.framework/
+*.app/
+*.dSYM/
+
+# Databases, runtime dumps, caches
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.log
+*.dump
+*.pcap
+*.pcapng
+
+# Build outputs
+build/
+DerivedData/
+.gradle/
+*.class
+bin/
+out/
+dist/
+
+# Python caches and bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Credentials, keys, local secrets
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+*.cer
+*.crt
+*.pem
+*.key
+*.env
+*.env.local
+
+# Dependency managers
+Pods/
+.build/
+node_modules/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

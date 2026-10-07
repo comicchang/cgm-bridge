@@ -1,0 +1,70 @@
+{
+  "supported_versions": {
+    "3.9.4": {
+      "bundle_id": "com.sisensing.eco",
+      "executable": "ECO",
+      "binary_sha256": "575e738d4694b71c9ebda7c02bdd34909bde8618c0418608aefe07511247c621",
+      "patched_sha256": "570036439ce7c65f2dff9c02c3d3e043f52398699e6a17c571c5ea61751a87a7",
+      "description": "SiSensing ECO 3.9.4 (Build 6) 24天传感器周期扩展与后台防崩溃补丁",
+      "default_days": 24,
+      "sites": [
+        {
+          "id": "P1",
+          "name": "P1_isOpenLimitExpiration",
+          "offset": "0xB5A3DC",
+          "before": "02010039",
+          "after": "1F010039",
+          "description": "isOpenLimitExpiration 全局开关强制写 0（关 BLE 截断/错误 109）"
+        },
+        {
+          "id": "P2",
+          "name": "P2_getMaxGlucoseDay",
+          "offset": "0x247B00",
+          "before": "F85FBCA9",
+          "after": "00038052C0035FD6",
+          "description": "getMaxGlucoseDay 入口覆写 MOV W0, #24; RET"
+        },
+        {
+          "id": "P3",
+          "name": "P3_getMaxGlucoseNum",
+          "offset": "0x247714",
+          "before": "F85FBCA9",
+          "after": "00E09052C0035FD6",
+          "description": "getMaxGlucoseNum 入口覆写 MOV W0, #34560; RET (24*1440)"
+        },
+        {
+          "id": "P4",
+          "name": "P4_default_days_dword",
+          "offset": "0xD01F84",
+          "before": "0E000000",
+          "after": "18000000",
+          "description": "setBLEConfigWithString 默认天数 dword 14 -> 24"
+        },
+        {
+          "id": "P5a",
+          "name": "P5a_growing_no_params",
+          "offset": "0x1D39D4",
+          "before": "F44FBEA9FD7B01A9",
+          "after": "00008052C0035FD6",
+          "description": "-[GrowingIOManager gj_GrowingNoParamsEvent:] 入口覆写 RET"
+        },
+        {
+          "id": "P5b",
+          "name": "P5b_growing_event",
+          "offset": "0x1D3A40",
+          "before": "F657BDA9F44F01A9",
+          "after": "00008052C0035FD6",
+          "description": "-[GrowingIOManager gj_GrowingEvent:andParams:] 入口覆写 RET（修后台 SIGABRT 崩溃）"
+        },
+        {
+          "id": "P5c",
+          "name": "P5c_growing_event_kv",
+          "offset": "0x1D3AD0",
+          "before": "F85FBCA9F65701A9",
+          "after": "00008052C0035FD6",
+          "description": "-[GrowingIOManager gj_GrowingEvent:andKeyParams:andValueParams:] 入口覆写 RET"
+        }
+      ]
+    }
+  }
+}

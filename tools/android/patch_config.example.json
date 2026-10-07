@@ -1,0 +1,123 @@
+{
+  "supported_versions": {
+    "02.26.01.00": {
+      "package_name": "com.sisensing.eco",
+      "version_name": "02.26.01.00",
+      "description": "SiSensing ECO Android 官方版 (加固版本说明与脱壳后候选站点)",
+      "apk_sha256": "9a9f1e9fde51740c69f229b8a85771c785c82d9ec1ddea634527071cd8e0780d",
+      "default_days": 24,
+      "packer": "NetEase-YiDun",
+      "packer_note": "官方安装包受网易易盾加固保护，业务代码由 libnesec.so 动态加载。直接 smali 替换需先经由动态脱壳（如 Frida dexdump / FART / BlackDex）提取解密 DEX；或优先推荐使用 LSPosed/Frida 运行时 Hook（无需重打包与过签名校验）。",
+      "verified": false,
+      "unverified_note": "【Fail-Closed 规则】官方版本受易盾加固保护，本配置中所有站点 (A1~A5) 均为脱壳后候选模式，标记为 verified: false / [待验证]。补丁工具默认拒绝应用未验证站点并阻断退出。必须先动态脱壳确认具体寄存器后传入 --allow-unverified，或推荐直接使用 LSPosed 运行时 Hook 零修改生效。",
+      "sites": [
+        {
+          "id": "A1_ble_packet_limit",
+          "name": "BLE数据接收序号门禁",
+          "target_smali": "com/sisensing/common/ble/LocalBleService.smali",
+          "search_pattern": "const/16 [v0-9]+, 0x4ec0\\b|const/16 [v0-9]+, 0x4ec1\\b",
+          "replace_pattern": "const v0, 0x8700",
+          "description": "对应 iOS P1: 蓝牙上报序号截断门禁 (20160 -> 34560)",
+          "status": "[待验证候选: 需脱壳后确认具体寄存器编号]",
+          "verified": false,
+          "notes": "【待验证候选】注意：搜索正则允许任意寄存器通配，但替换串写死 v0。实际应用前必须用真实 APK 脱壳后反汇编核实具体目标寄存器分配（如目标代码使用 v1 则需调整为 const v1, 0x8700），切勿在未核实寄存器情况下直接发布或应用。"
+        },
+        {
+          "id": "A2_getSensorDays",
+          "name": "传感器生命周期天数常量",
+          "target_smali": "com/sisensing/common/ble/BleModel.smali",
+          "search_pattern": "\\.method public static getSensorDays\\(\\)I[\\s\\S]*?const/16 [v0-9]+, 0xe\\b",
+          "replace_pattern": "const/16 v0, 0x18",
+          "description": "对应 iOS P2: 传感器有效天数常量 14 -> 24",
+          "status": "[待验证: 候选站点，对应 getSensorDays() 返回 14]",
+          "verified": false
+        },
+        {
+          "id": "A3_getSensorNum",
+          "name": "传感器最大采集点数常量",
+          "target_smali": "com/sisensing/common/ble/BleModel.smali",
+          "search_pattern": "\\.method public static getSensorNum\\(\\)I[\\s\\S]*?const(?:/16)? [v0-9]+, 0x4ec0\\b",
+          "replace_pattern": "const v0, 0x8700",
+          "description": "对应 iOS P3: 传感器最大采样点数 20160 (14*1440) -> 34560 (24*1440)",
+          "status": "[待验证: 候选站点，对应 getSensorNum() 返回 20160]",
+          "verified": false
+        },
+        {
+          "id": "A4_expiration_ms_constant",
+          "name": "时间戳毫秒过期窗口",
+          "target_smali": "com/sisensing/bsmonitoring/BsMonitoringEcoFragment.smali",
+          "search_pattern": "const-wide(?:/32)? [v0-9]+, 0x48190800L",
+          "replace_pattern": "const-wide v0, 0x7b98a000L",
+          "description": "对应 iOS P4: 14天毫秒常量 1209600000L -> 24天毫秒常量 2073600000L",
+          "status": "[待验证: 毫秒级时间差比对候选分支]",
+          "verified": false
+        },
+        {
+          "id": "A5_dealSonserStatusExpire",
+          "name": "过期状态机弹窗拦截",
+          "target_smali": "com/sisensing/bsmonitoring/BsMonitoringEcoFragment.smali",
+          "search_pattern": "\\.method private final dealSonserStatusExpire\\([^)]*\\)V",
+          "replace_pattern": ".method private final dealSonserStatusExpire()V\n    .registers 1\n    return-void",
+          "description": "对应 iOS FirstMainView probeExpiration 弹窗与只读状态拦截: 入口直接 return-void",
+          "status": "[高危候选: 默认禁用]",
+          "verified": false,
+          "enabled": false,
+          "notes": "【高危候选模式，默认禁用】注意：直接改写方法声明行会导致方法签名与调用方/DEX符号表不一致，引发 ART/odex 校验失败或运行时崩溃。本站点默认禁用 (enabled: false)。推荐采用运行时 Hook (如 LSPosed 置空实现) 或在脱壳后精确定位方法体第一条指令插入 return-void，严禁未经验证直接启用。"
+        }
+      ]
+    },
+    "3.9.4": {
+      "package_name": "com.sisensing.eco",
+      "version_name": "3.9.4",
+      "description": "SiSensing ECO Android 3.9.x 社区/未加固基线模板 (占位配置)",
+      "apk_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "apk_sha256_note": "【门禁说明】此处的全零 hash 为占位符。使用前必须从你自备的真实 APK 提取 SHA-256 并填入；全零或占位 hash 会被 fail-closed 门禁直接拒绝执行。",
+      "default_days": 24,
+      "packer": "None",
+      "verified": false,
+      "unverified_note": "【Fail-Closed 规则】3.9.4 为占位模板，标记为 verified: false / [待验证: 占位模板]。补丁工具默认拒绝应用未验证站点。需在真实目标 APK 上核实指令后将 verified 设为 true 或传入 --allow-unverified。",
+      "sites": [
+        {
+          "id": "P1_ble_limit",
+          "name": "BLE 数据包丢弃门禁",
+          "target_smali": "com/sisensing/common/ble/LocalBleService.smali",
+          "search_pattern": "const/16 v0, 0x4ec1",
+          "replace_pattern": "const v0, 0x8701",
+          "description": "14 天数据点 20161 限制放宽到 24 天 34561",
+          "status": "[待验证: 占位模板]",
+          "verified": false
+        },
+        {
+          "id": "P2_max_days",
+          "name": "最大有效天数常量",
+          "target_smali": "com/sisensing/common/utils/Utils.smali",
+          "search_pattern": "const/4 v0, 0xe",
+          "replace_pattern": "const/16 v0, 0x18",
+          "description": "最大有效天数 14 -> 24",
+          "status": "[待验证: 占位模板]",
+          "verified": false
+        },
+        {
+          "id": "P3_max_num",
+          "name": "最大采样点数常量",
+          "target_smali": "com/sisensing/common/utils/Utils.smali",
+          "search_pattern": "const v0, 0x4ec0",
+          "replace_pattern": "const v0, 0x8700",
+          "description": "最大采样点数 20160 -> 34560",
+          "status": "[待验证: 占位模板]",
+          "verified": false
+        },
+        {
+          "id": "P4_duration_ms",
+          "name": "过期毫秒窗口",
+          "target_smali": "com/sisensing/bsmonitoring/BsMonitoringEcoFragment.smali",
+          "search_pattern": "const-wide v0, 0x48190800L",
+          "replace_pattern": "const-wide v0, 0x7b98a000L",
+          "description": "14 天毫秒 1209600000L -> 24 天毫秒 2073600000L",
+          "status": "[待验证: 占位模板]",
+          "verified": false
+        }
+      ]
+    }
+  }
+}
