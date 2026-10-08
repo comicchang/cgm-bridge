@@ -16,6 +16,8 @@
 1. **路线 A：官方 App 补丁工具链（Patch Toolchain）**
    - 针对官方客户端（`com.sisensing.eco`）的字节补丁与重打包流程。
    - 实现生命周期限制解除、脱机本地数据导出增强等能力。
+   - 配套运行时组件：[状态掩码 dylib](tools/dylib/README.md)（抑制探头失效门禁自我复活，保持数据管线连通）。
+   - ⚠️ **24 天扩展 = 数据管线连续性，非精度背书**：传感器寿命末期精度随寿命递减是物理规律，详见 [数据质量实证](docs/data-quality.md)。
 2. **路线 B：独立读取器（Standalone CGMReader）**
    - 不依赖任何官方闭源库的原生独立应用。
    - 原生 BLE 直连与原始通信帧捕获。
@@ -33,10 +35,12 @@ cgm-bridge/
 ├── SANITIZATION.md          # 严格脱敏契约与规范
 ├── .gitignore               # 二进制、依赖与私有文件忽略规则
 ├── docs/                    # 详细架构与协议文档
-│   └── architecture.md      # 双路线技术架构与 Mermaid 数据流
+│   ├── architecture.md      # 双路线技术架构与 Mermaid 数据流
+│   └── data-quality.md      # 传感器寿命末期数据质量实证与精度分级（重要）
 ├── tools/                   # 路线 A：补丁与自动化工具链
 │   ├── ios/                 # iOS IPA 补丁、校验与重签名脚本
-│   └── android/             # Android APK 反编译与补丁脚本
+│   ├── android/             # Android APK 反编译与补丁脚本
+│   └── dylib/               # 运行时状态掩码 dylib（探头失效 gate 抑制）
 └── apps/                    # 路线 B：独立客户端工程
     ├── ios-cgmreader/       # iOS Swift/SwiftUI 原生独立帧记录器 (v0)
     └── android-cgmreader/   # Android Kotlin 原生独立帧记录器 (v0)
