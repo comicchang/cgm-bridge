@@ -20,7 +20,7 @@
 
 **ABI 依据**（对目标版本 3.9.4 二进制 method encoding 的逆向核对；其他 App 版本需重新核对）：getter `@16@0:8`（返回 `NSString *`）、setter `v24@0:8@16`（void，单对象参数）。[fact@3.9.4]
 
-**安装语义**：constructor 首次尝试安装，失败后 50ms / 200ms 各重试一次；任一类或任一选择子缺失（如 App 版本变化导致改名）即判定安装失败（`ok=NO`），**不会静默半安装**——以系统日志中 `StatusMask: install attempt=N ok=M` 为准核对安装结果。
+**安装语义（原子性）**：constructor 首次尝试安装，失败后 50ms / 200ms 各重试一次。安装分两阶段：先对三个类与全部五个选择子做**全量预检（零副作用）**，任一缺失（如 App 版本变化导致改名）即判定失败——**不执行任何 IMP 交换，无部分安装状态**；预检全部通过后才一次性完成全部 hook。以系统日志中 `StatusMask: precheck failed …` / `install attempt=N ok=M` 核对安装结果。
 
 ## 与二进制补丁（tools/ios/）的分工
 

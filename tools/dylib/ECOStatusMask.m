@@ -49,42 +49,41 @@ static void hook_save(id self, SEL _cmd, id model, id alarm, id status) {
 
 static BOOL try_install(int attempt) {
     @autoreleasepool {
-        BOOL ok = YES;
         Class bd = objc_getClass("BlueDeviceModel");
         Class gl = objc_getClass("GlucoseModel");
         Class bdd = objc_getClass("BlueDataDispose");
 
-        if (bd) {
-            Method gm = class_getInstanceMethod(bd, @selector(deviceStatus));
-            Method sm = class_getInstanceMethod(bd, @selector(setDeviceStatus:));
-            if (!gm || !sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDeviceModel methods missing gm=%p sm=%p (attempt %d)", gm, sm, attempt); }
-            if (gm && method_getImplementation(gm) != (IMP)hook_bd_getter) {
-                orig_bd_getter = (NSString *(*)(id, SEL))method_setImplementation(gm, (IMP)hook_bd_getter);
-            }
-            if (sm && method_getImplementation(sm) != (IMP)hook_bd_setter) {
-                orig_bd_setter = (void (*)(id, SEL, NSString *))method_setImplementation(sm, (IMP)hook_bd_setter);
-            }
-        } else { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDeviceModel missing (attempt %d)", attempt); }
+        // Phase 1: 全量预检（无副作用）——三个类与全部五个选择子必须同时在场
+        Method bd_gm = bd ? class_getInstanceMethod(bd, @selector(deviceStatus)) : NULL;
+        Method bd_sm = bd ? class_getInstanceMethod(bd, @selector(setDeviceStatus:)) : NULL;
+        Method gl_gm = gl ? class_getInstanceMethod(gl, @selector(deviceStatus)) : NULL;
+        Method gl_sm = gl ? class_getInstanceMethod(gl, @selector(setDeviceStatus:)) : NULL;
+        Method bdd_sm = bdd ? class_getInstanceMethod(bdd, @selector(saveAlarmStatusAndDeviceStatusWithGlucoseModel:alarmStatus:deviceStatus:)) : NULL;
 
-        if (gl) {
-            Method gm = class_getInstanceMethod(gl, @selector(deviceStatus));
-            Method sm = class_getInstanceMethod(gl, @selector(setDeviceStatus:));
-            if (!gm || !sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: GlucoseModel methods missing gm=%p sm=%p (attempt %d)", gm, sm, attempt); }
-            if (gm && method_getImplementation(gm) != (IMP)hook_gl_getter) {
-                orig_gl_getter = (NSString *(*)(id, SEL))method_setImplementation(gm, (IMP)hook_gl_getter);
+        BOOL ok = (bd != nil && gl != nil && bdd != nil &&
+                   bd_gm != NULL && bd_sm != NULL &&
+                   gl_gm != NULL && gl_sm != NULL && bdd_sm != NULL);
+        if (!ok) {
+            os_log(OS_LOG_DEFAULT, "StatusMask: precheck failed (attempt %d) bd=%p gl=%p bdd=%p bd_gm=%p bd_sm=%p gl_gm=%p gl_sm=%p bdd_sm=%p",
+                   attempt, bd, gl, bdd, bd_gm, bd_sm, gl_gm, gl_sm, bdd_sm);
+        } else {
+            // Phase 2: 预检全部通过后才执行 IMP 交换——要么全部生效，要么零副作用
+            if (method_getImplementation(bd_gm) != (IMP)hook_bd_getter) {
+                orig_bd_getter = (NSString *(*)(id, SEL))method_setImplementation(bd_gm, (IMP)hook_bd_getter);
             }
-            if (sm && method_getImplementation(sm) != (IMP)hook_gl_setter) {
-                orig_gl_setter = (void (*)(id, SEL, NSString *))method_setImplementation(sm, (IMP)hook_gl_setter);
+            if (method_getImplementation(bd_sm) != (IMP)hook_bd_setter) {
+                orig_bd_setter = (void (*)(id, SEL, NSString *))method_setImplementation(bd_sm, (IMP)hook_bd_setter);
             }
-        } else { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: GlucoseModel missing (attempt %d)", attempt); }
-
-        if (bdd) {
-            Method sm = class_getInstanceMethod(bdd, @selector(saveAlarmStatusAndDeviceStatusWithGlucoseModel:alarmStatus:deviceStatus:));
-            if (!sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDataDispose save method missing (attempt %d)", attempt); }
-            if (sm && method_getImplementation(sm) != (IMP)hook_save) {
-                orig_save = (void (*)(id, SEL, id, id, id))method_setImplementation(sm, (IMP)hook_save);
+            if (method_getImplementation(gl_gm) != (IMP)hook_gl_getter) {
+                orig_gl_getter = (NSString *(*)(id, SEL))method_setImplementation(gl_gm, (IMP)hook_gl_getter);
             }
-        } else { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDataDispose missing (attempt %d)", attempt); }
+            if (method_getImplementation(gl_sm) != (IMP)hook_gl_setter) {
+                orig_gl_setter = (void (*)(id, SEL, NSString *))method_setImplementation(gl_sm, (IMP)hook_gl_setter);
+            }
+            if (method_getImplementation(bdd_sm) != (IMP)hook_save) {
+                orig_save = (void (*)(id, SEL, id, id, id))method_setImplementation(bdd_sm, (IMP)hook_save);
+            }
+        }
 
         os_log(OS_LOG_DEFAULT, "StatusMask: install attempt=%d ok=%d", attempt, ok);
         if (ok) { g_installed = YES; }
