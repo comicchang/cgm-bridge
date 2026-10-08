@@ -87,4 +87,4 @@ python3 patch_official_ipa.py <decrypted.ipa> <patched.ipa>
 
 ## 第三方许可
 
-仓库内嵌的 Gradle Wrapper（`apps/android-cgmreader/gradle/wrapper/gradle-wrapper.jar`、`gradlew`、`gradlew.bat`）版权归 Gradle Inc.，采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)，作为本仓库 MIT 许可证的例外组件分发，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+仓库内嵌的 Gradle Wrapper（`gradle-wrapper.jar`、`gradlew`、`gradlew.bat`）按各文件头声明归属（Gradle Inc. / the original authors），统一采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)，作为本仓库 MIT 许可证的例外组件分发，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
