@@ -82,3 +82,9 @@ python3 patch_official_ipa.py <decrypted.ipa> <patched.ipa>
 ## 🔒 脱敏与安全承诺
 
 本项目执行严苛的 [脱敏规范契约 (SANITIZATION.md)](SANITIZATION.md)。仓库所有代码、文档及提交历史中绝不包含任何生产设备序列号、真实 BLE 名称、真实蓝牙 MAC、个人 IP、私钥凭据或容器唯一标识符。
+
+---
+
+## 第三方许可
+
+仓库内嵌的 Gradle Wrapper（`apps/android-cgmreader/gradle/wrapper/gradle-wrapper.jar`、`gradlew`、`gradlew.bat`）版权归 Gradle Inc.，采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)，作为本仓库 MIT 许可证的例外组件分发，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

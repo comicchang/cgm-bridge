@@ -57,6 +57,7 @@ static BOOL try_install(int attempt) {
         if (bd) {
             Method gm = class_getInstanceMethod(bd, @selector(deviceStatus));
             Method sm = class_getInstanceMethod(bd, @selector(setDeviceStatus:));
+            if (!gm || !sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDeviceModel methods missing gm=%p sm=%p (attempt %d)", gm, sm, attempt); }
             if (gm && method_getImplementation(gm) != (IMP)hook_bd_getter) {
                 orig_bd_getter = (NSString *(*)(id, SEL))method_setImplementation(gm, (IMP)hook_bd_getter);
             }
@@ -68,6 +69,7 @@ static BOOL try_install(int attempt) {
         if (gl) {
             Method gm = class_getInstanceMethod(gl, @selector(deviceStatus));
             Method sm = class_getInstanceMethod(gl, @selector(setDeviceStatus:));
+            if (!gm || !sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: GlucoseModel methods missing gm=%p sm=%p (attempt %d)", gm, sm, attempt); }
             if (gm && method_getImplementation(gm) != (IMP)hook_gl_getter) {
                 orig_gl_getter = (NSString *(*)(id, SEL))method_setImplementation(gm, (IMP)hook_gl_getter);
             }
@@ -78,6 +80,7 @@ static BOOL try_install(int attempt) {
 
         if (bdd) {
             Method sm = class_getInstanceMethod(bdd, @selector(saveAlarmStatusAndDeviceStatusWithGlucoseModel:alarmStatus:deviceStatus:));
+            if (!sm) { ok = NO; os_log(OS_LOG_DEFAULT, "StatusMask: BlueDataDispose save method missing (attempt %d)", attempt); }
             if (sm && method_getImplementation(sm) != (IMP)hook_save) {
                 orig_save = (void (*)(id, SEL, id, id, id))method_setImplementation(sm, (IMP)hook_save);
             }

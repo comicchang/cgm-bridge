@@ -106,10 +106,16 @@ adb exec-out run-as com.cgmbridge.reader cat files/ble_frames.log > ble_frames.l
 - **v0（当前已交付版本）**：最小工程 BLE 帧记录器。完成扫描、连接、发现服务、订阅 FF32、落盘原始 hex 通信帧至 `ble_frames.log` 与 Logcat。
 - **v1（规划中：协议应答机）**：按 `ble-protocol.md` 实现握手认证、传感器激活与历史/实时遥测数据拉取命令序列（`cmdId: 0x01` ~ `0xF0` 应答机与 CRC 校验）。
 - **v2（规划中：算法引擎）**：集成逆向工程提取之 `ALGORITHM E1.1.5N(2025_09_02)` 换算逻辑，将原始电流/阻抗物理量换算为血糖浓度（mmol/L 与 mg/dL）及趋势。
-- **v3（规划中：系统级健康网桥）**：对接 Android Health Connect（`BloodGlucoseRecord`），遵循与 iOS HealthKit 对齐的 `SyncIdentifier` 原则——基于 `(sensor_id, sample_timestamp)` 生成确定性幂等唯一键，实现跨路线（路线 A 补丁导出与路线 B 独立直连）幂等去重（属 v3 规划，未交付）。
+- **v3（规划中：系统级健康网桥）**：对接 Android Health Connect（`BloodGlucoseRecord`），设计上采用与 iOS HealthKit 对齐的 `SyncIdentifier` 原则——基于 `(sensor_id, sample_timestamp)` 生成确定性幂等唯一键，以达成跨路线（路线 A 补丁导出与路线 B 独立直连）幂等去重（属 v3 规划，未交付；Health Connect 跨应用系统级合并行为未经验证）。
 
 ---
 
-## 8. 免责声明
+## 8. 日志隐私
+
+`ble_frames.log` 与 Logcat 输出包含运行时蓝牙标识（传感器 MAC 地址、广播名等，均为运行时抓取值而非仓库内置）；对外分享日志前请自行脱敏。
+
+---
+
+## 9. 免责声明
 
 本项目仅供个人数据互操作性与协议研究，非官方工具，不提供任何医疗准确性担保。传感器硬件与通信协议归原厂商所有。用户应自行承担使用补丁或独立客户端导致的所有风险。

@@ -1,7 +1,7 @@
 // CGMReader.swift — 备份通路 B v0：设备端 BLE 帧记录器（SiSensing ECO CGM）
 // 完整交付物：扫描→连接→订阅→十六进制记录全部 TX/RX 帧到 Documents/ble_frames.log
-// v1（待 protocol-spec.md）：auth/activate/getData 命令序列 + 数据帧解析
-// v2（待 algorithm-feasibility.md）：厂商算法换算 + HealthKit 写入
+// v1（待 docs/ble-protocol.md）：auth/activate/getData 命令序列 + 数据帧解析
+// v2（待 docs/algorithm-notes.md）：厂商算法换算 + HealthKit 写入
 // 与主通路（ECO App 补丁）完全独立，互不影响。
 
 import SwiftUI

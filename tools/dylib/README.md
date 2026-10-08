@@ -18,7 +18,9 @@
 | `GlucoseModel` | `deviceStatus` / `setDeviceStatus:` | 同上（数据处理入口的读取点） |
 | `BlueDataDispose` | `saveAlarmStatusAndDeviceStatusWithGlucoseModel:alarmStatus:deviceStatus:` | 第 3 参掩码，`alarmStatus` 透传保持厂商语义 |
 
-**ABI 依据**（对目标二进制 method encoding 的逆向核对）：getter `@16@0:8`（返回 `NSString *`）、setter `v24@0:8@16`（void，单对象参数）。[fact]
+**ABI 依据**（对目标版本 3.9.4 二进制 method encoding 的逆向核对；其他 App 版本需重新核对）：getter `@16@0:8`（返回 `NSString *`）、setter `v24@0:8@16`（void，单对象参数）。[fact@3.9.4]
+
+**安装语义**：constructor 首次尝试安装，失败后 50ms / 200ms 各重试一次；任一类或任一选择子缺失（如 App 版本变化导致改名）即判定安装失败（`ok=NO`），**不会静默半安装**——以系统日志中 `StatusMask: install attempt=N ok=M` 为准核对安装结果。
 
 ## 与二进制补丁（tools/ios/）的分工
 
@@ -49,7 +51,7 @@ chown mobile:mobile /var/jb/Library/MobileSubstrate/DynamicLibraries/ECOStatusMa
 
 ## 回滚
 
-删除 `/var/jb/Library/MobileSubstrate/DynamicLibraries/ECOStatusMask.{dylib,plist}` 后重启 App，即恢复原生行为。完全可逆。
+删除 `/var/jb/Library/MobileSubstrate/DynamicLibraries/ECOStatusMask.{dylib,plist}` 后重启 App，即恢复原生行为。本 dylib 只做运行时方法交换，不修改 App 二进制与数据库文件，回滚无残留。
 
 ## 已知限制
 

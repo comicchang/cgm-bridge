@@ -69,24 +69,23 @@
 
 - **v0（现状）**：已实现 CoreBluetooth 基础调度、急切初始化与日志输出。
 - **v1（通信与存储收口）**：根据协议规范（`FF30`/`FF31`/`FF32`），按顺序完成 Auth 鉴权握手，并拉取解析标准 8 字节数据帧；保证原始电流、温度、初级血糖全部无损落入本地数据库。
-- **v2（算法集成）**：采用方案乙将未脱壳 binary 转为 dylib 动态加载，调用 `MyAlgorithmObjectVE115N` 原生算力，实现对滑动窗口与探头漂移的临床级精度校正。
+- **v2（算法集成，规划中）**：拟采用方案乙将未脱壳 binary 转为 dylib 动态加载，调用 `MyAlgorithmObjectVE115N` 原生算力做数值换算；精度以厂商算法自身上限为界（方案评估见 `algorithm-notes.md`，未交付/未实测）。
 - **v3（健康系统接入）**：写入 iOS 系统自带 HealthKit，让用户可以在系统健康 App 或第三方医疗软件中无缝查看全天血糖图谱。
 
 ---
 
-## 4. Apple HealthKit `SyncIdentifier` 去重与复用原则 [fact]
+## 4. Apple HealthKit `SyncIdentifier`：应用层幂等与跨 App 去重（未验证声明）
 
-在将血糖数据写入 Apple HealthKit 时，必须遵循 iOS HealthKit 的多数据源去重机制：
+在将血糖数据写入 Apple HealthKit 时，需要区分两件事：**本 App 自身的写入幂等**（已验证的设计目标）与**跨 App 自动去重**（未经验证，不作保证）。
 
 ### 4.1 跨 App 写入冲突与双重记录风险
-iOS HealthKit 支持多个 App 向同一健康指标（`HKQuantityTypeIdentifierBloodGlucose`）写入数据。若用户在官方 App 中已同步过部分时间段的血糖记录，而独立客户端又作为另一个 BundleID 的 App 重复写入相同时间点的血糖值，系统健康中将出现**双倍血糖读数**，污染用户的个人健康档案与统计算法。
+iOS HealthKit 支持多个 App 向同一健康指标（`HKQuantityTypeIdentifierBloodGlucose`）写入数据。若用户在官方 App 中已同步过部分时间段的血糖记录，而独立客户端又作为另一个 BundleID 的 App 写入相同时间点的血糖值，系统健康中可能出现**双份血糖记录**（HealthKit 以数据源维度隔离样本，跨数据源合并行为未经本项目实测验证）。
 
-### 4.2 HealthKit 元数据去重机制
-HealthKit 提供了专门的防重机制：在 `HKQuantitySample` 的 `metadata` 中传入 `HKMetadataKeySyncIdentifier` 与 `HKMetadataKeySyncVersion`：
-- 当两个样本具有相同的 `HKMetadataKeySyncIdentifier` 时，系统会自动判为同一条数据，不会重复生成两条读数。
+### 4.2 SyncIdentifier 元数据的官方语义
+HealthKit 提供 `HKMetadataKeySyncIdentifier` 与 `HKMetadataKeySyncVersion` 元数据。其官方语义是**同一数据源（同一 App）**在增量同步/恢复时避免重复导入；**两个不同 App 携带相同 SyncIdentifier 时系统是否自动合并，Apple 文档未作承诺，本项目未实测，不作任何保证。**
 
-### 4.3 独立客户端规范
-独立客户端在构造 HealthKit 样本时，**必须严格遵循统一的 SyncIdentifier 命名模板**：
+### 4.3 独立客户端规范（应用层幂等键）
+独立客户端在构造 HealthKit 样本时，采用统一的 SyncIdentifier 命名模板：
 ```swift
 let syncIdentifier = "cgm-bridge-sync-<DEVICE_ID>-t\(sampleTimestampMs)"
 let metadata: [String: Any] = [
@@ -95,4 +94,5 @@ let metadata: [String: Any] = [
     HKMetadataKeyWasUserEntered: false
 ]
 ```
-- 若从官方应用中迁移/打捞数据，可保持与官方一致的时间戳对齐规则，从而保证即使两端交替运行写入，HealthKit 中同一分钟的血糖点位依然保持绝对唯一且连续。
+- 该模板保证**本 App 自身**重跑导入/断点续传时的幂等性（同一时间戳不会在本 App 名下重复写入）。
+- 若从官方应用中迁移/打捞数据，可保持与官方一致的时间戳对齐规则，便于事后按时间线核对；**但两端交替写入时 HealthKit 中同一时间点是否保持唯一，依赖未验证的跨 App 行为**——需要严格单曲线的用户，应只选择一个写入源。

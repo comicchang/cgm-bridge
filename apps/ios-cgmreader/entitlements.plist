@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  仅越狱实验模板（jailbreak-only experimental template）：
+  - platform-application / com.apple.private.security.no-container 为私有 entitlement，
+    普通开发者签名无法获得授权；本模板仅供越狱设备 ldid ad-hoc 签名场景使用。
+  - get-task-allow 为调试标志，正式分发场景须移除。
+  - 不可用于 App Store / TestFlight / 常规 sideload。
+-->
 <plist version="1.0">
 <dict>
 	<key>application-identifier</key>

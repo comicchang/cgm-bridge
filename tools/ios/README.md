@@ -86,6 +86,7 @@ options:
 本脚本为保持 App 原有功能，在主二进制上保留了厂商原始 entitlements（含 Siri、APNs、associated-domains、app groups 等）。这些 entitlements **无法**用个人免费开发者证书签出——个人 provisioning profile 会拒绝它们。因此：
 
 - **支持的安装环境**：越狱设备（AppSync Unified）或 TrollStore——这类环境不校验 provisioning，ldid 签名即可启动。
+- **entitlement 不会被重签"授予"**：ldid 只是把 entitlement **声明**写入签名；越狱/TrollStore 因不校验 provisioning 才使其生效，而 APNs、Siri、app-groups 等服务的**服务器端授权**仍绑定厂商 Team ID——重签后相关服务不会正常工作，仅保留本地能力声明。
 - **不承诺**：AltStore / Sideloadly / 个人 Apple ID 直装。该路径未经验证，大概率因 entitlement 校验失败而无法安装；如需该路线，请自行用 Xcode 重新配置可签的 entitlement 集合并替换脚本内嵌模板。
 - `--team-id` 参数面向会自行管理完整 entitlement 的环境；默认 `TEAMID` 占位符仅供越狱/TrollStore 场景（ldid ad-hoc 亦可，可加 `--no-resign` 跳过）。
 

@@ -94,3 +94,5 @@ ssh root@<IP> "uicache -p /var/jb/Applications/CGMReader.app"
    iOS 系统策略在锁屏状态下会抑制 SpringBoard 上下文的未过滤 BLE 扫描发现回调（DISCOVER 数量为 0）。端到端重新发现/扫描绑定建议在设备解锁状态下进行；一旦建立连接并订阅通知，后台传输可正常维持。
 3. **免责声明**：
    本项目仅供个人数据互操作性与协议研究，非官方工具，不提供任何医疗准确性担保。
+4. **日志隐私**：`ble_frames.log` 与事件日志包含运行时蓝牙标识（CBPeripheral UUID、广播名等）；对外分享日志前请自行脱敏。
+5. **entitlements 模板**：`entitlements.plist` 为**仅越狱实验模板**（含私有 entitlement 与 `get-task-allow` 调试标志），普通开发者签名无法获得这些授权，不可用于常规安装/分发场景。

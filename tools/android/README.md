@@ -70,7 +70,7 @@ tools/android/
 ### 3.1 自适应版本门禁 (Fail-Closed)
 为防止由于版本不符导致 Smali 字节错位或运行时崩溃，脚本执行严格的版本与校验和比对：
 - 提取 `AndroidManifest.xml` 中的 `versionName`；
-- 在 `patch_config.json` 的 `supported_versions` 白名单中检索该版本；
+- 在补丁配置（默认模板 `patch_config.example.json`，复制改名后按需修改）的 `supported_versions` 白名单中检索该版本；
 - 核验输入 APK 的 SHA-256 与配置白名单哈希；若存在任何差异，**立即中止退出**。
 
 ---
